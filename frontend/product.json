@@ -1,9 +1,9 @@
 {
-  "abiSource": "pending-current-source",
+  "abiSource": "runtime-matched-current-source",
   "repo": "social-recovery-wallet",
   "brand": "Social Recovery Wallet",
   "summary": "Deposit and send native BOT through a guardian-protected wallet. Recovery changes the owner’s spending authority after the required guardian approvals. Token custody is not supported.",
-  "address": null,
+  "address": "0x7F02b8b67b72C394D4e1e479D6d2326ce5E9aec4",
   "owner": null,
   "abi": [
     {

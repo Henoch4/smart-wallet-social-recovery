@@ -1,10 +1,10 @@
 # Social Recovery Wallet
 
-Manage a wallet’s guardian registry and recovery quorum. This prototype records recovery authority; it does not provide a general-purpose smart-account execution service.
+Deposit and send native BOT through a guardian-protected wallet. Recovery changes the owner’s spending authority after the required guardian approvals. Token custody is not supported.
 
 ## Mainnet status
 
-Mainnet deployment is pending. The interface does not simulate transactions or balances.
+Contract on BOT Chain mainnet (677): [0x7F02b8b67b72C394D4e1e479D6d2326ce5E9aec4](https://scan.botchain.ai/address/0x7F02b8b67b72C394D4e1e479D6d2326ce5E9aec4).
 
 Wallet actions require BOT Chain mainnet, deployed bytecode, and a connected compatible wallet. Every action is simulated before a transaction review; only a subsequent wallet confirmation can send it.
 
@@ -19,14 +19,19 @@ Wallet actions require BOT Chain mainnet, deployed bytecode, and a connected com
 
 ## Contract interface
 
-`frontend/product.json` uses the ABI compiled from the current Solidity source.
+`frontend/product.json` uses the current-source ABI, matched against the deployed mainnet runtime bytecode. Explorer source publication is tracked separately.
 
 | Action | Contract signature |
 |---|---|
 | Add a guardian | `addGuardian(address,address,uint256)` |
+| Cancel pending recovery | `cancelRecovery(address)` |
 | Approve recovery | `completeRecovery(address,address)` |
 | Create your recovery registry | `createWallet(uint256)` |
+| Deposit tokens | `deposit(address)` |
 | Start recovery | `initiateRecovery(address,address)` |
+| Remove a guardian | `removeGuardian(address,address)` |
+| Send from your recovered wallet | `sendBOT(address,address,uint256)` |
+| Set the recovery quorum | `setThreshold(address,uint256)` |
 
 ## Run locally
 
