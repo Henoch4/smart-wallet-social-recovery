@@ -44,6 +44,8 @@ contract SmartWalletSocialRecovery is ReentrancyGuard, Ownable {
     mapping(address => mapping(uint256 => mapping(address => bool))) public guardianApprovals;
     mapping(address => mapping(uint256 => uint256)) public approvalWeight;
     uint256 public walletCount;
+    mapping(address=>uint256) public walletBalance;
+    mapping(address=>uint256) public guardianWeight;
     // FIX: sane upper bound on guardian count.
     uint256 public constant MAX_GUARDIANS = 8;
 
@@ -52,6 +54,8 @@ contract SmartWalletSocialRecovery is ReentrancyGuard, Ownable {
     event RecoveryInitiated(address indexed wallet, address indexed recoveryTarget);
     event RecoveryApproved(address indexed wallet, address indexed guardian, uint256 approvalWeight, uint256 threshold);
     event RecoveryCompleted(address indexed wallet, address indexed newOwner);
+    event Deposited(address indexed wallet,address indexed sender,uint256 amount);
+    event PaymentSent(address indexed wallet,address indexed to,uint256 amount);
 
     function createWallet(uint256 threshold) external nonReentrant {
         require(threshold > 0, "Zero threshold");
@@ -75,6 +79,7 @@ contract SmartWalletSocialRecovery is ReentrancyGuard, Ownable {
     // not involved here; wallet owners control their own wallets.
     function addGuardian(address walletKey, address guardian, uint256 weight) external nonReentrant {
         require(guardian != address(0), "Zero address");
+        require(guardian != msg.sender, "Owner cannot be own guardian");
         require(weight > 0, "Zero weight");
         Wallet storage w = wallets[walletKey];
         require(w.owner != address(0), "No wallet");
@@ -86,7 +91,35 @@ contract SmartWalletSocialRecovery is ReentrancyGuard, Ownable {
         guardians[walletKey][guardian] = Guardian({guardian: guardian, weight: weight, active: true});
         userGuardians[walletKey].push(guardian);
         w.guardianCount += 1;
+        guardianWeight[walletKey] += weight;
         emit GuardianAdded(walletKey, guardian, weight);
+    }
+
+    function deposit(address walletKey) external payable nonReentrant {
+        Wallet storage w=wallets[walletKey];
+        require(w.owner!=address(0)&&guardianWeight[walletKey]>=w.threshold,"Recovery setup incomplete");
+        require(msg.value>0,"Zero deposit");walletBalance[walletKey]+=msg.value;
+        emit Deposited(walletKey,msg.sender,msg.value);
+    }
+    function sendBOT(address walletKey,address payable to,uint256 amount) external nonReentrant {
+        Wallet storage w=wallets[walletKey];require(w.owner==msg.sender&&!w.locked,"Not unlocked wallet owner");
+        require(to!=address(0)&&amount>0&&amount<=walletBalance[walletKey],"Invalid payment");
+        walletBalance[walletKey]-=amount;(bool ok,)=to.call{value:amount}("");require(ok,"Payment failed");
+        emit PaymentSent(walletKey,to,amount);
+    }
+    function cancelRecovery(address walletKey) external {
+        Wallet storage w=wallets[walletKey];require(w.owner==msg.sender&&w.locked,"Cannot cancel");
+        w.locked=false;w.pendingNewOwner=address(0);w.recoveryNonce++;
+    }
+    function removeGuardian(address walletKey,address guardian) external {
+        Wallet storage w=wallets[walletKey];require(w.owner==msg.sender&&!w.locked,"Not unlocked wallet owner");
+        Guardian storage g=guardians[walletKey][guardian];require(g.active,"Inactive guardian");
+        require(guardianWeight[walletKey]-g.weight>=w.threshold,"Threshold would be unreachable");
+        guardianWeight[walletKey]-=g.weight;w.guardianCount--;g.active=false;
+    }
+    function setThreshold(address walletKey,uint256 threshold) external {
+        Wallet storage w=wallets[walletKey];require(w.owner==msg.sender&&!w.locked,"Not unlocked wallet owner");
+        require(threshold>0&&threshold<=guardianWeight[walletKey],"Invalid threshold");w.threshold=threshold;
     }
 
     // FIX: was caller-operates-on-self — any address could lock ANY wallet and even
