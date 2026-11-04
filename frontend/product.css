@@ -44,3 +44,17 @@ body.suite-product button,body.suite-product a{cursor:pointer!important}
 .suite-layout-4 .suite-action{border:0;border-top:2px solid currentColor;border-radius:0;padding:24px 0}
 @media(max-width:600px){.suite-nav{padding:14px 16px;gap:10px}.suite-nav #suite-network{order:3;width:100%;font-size:13px}.suite-workspace{padding:36px 16px}.suite-layout-1 .suite-action{grid-template-columns:1fr}.suite-workspace .suite-values{grid-template-columns:1fr}.suite-values dd{margin-bottom:12px}}
 @media(prefers-reduced-motion:reduce){body.suite-product *,body.suite-product *::before,body.suite-product *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* ==== layout variant: rail ==== */
+.su-rail .suite-workspace{max-width:1400px}
+.su-rail #suite-overview{float:left;width:min(300px,32vw);position:sticky;top:90px;margin:0 40px 24px 0;padding:0 28px 0 0;border-right:1px solid currentColor;min-height:420px}
+.su-rail #suite-stats{display:grid;grid-template-columns:1fr;gap:0}
+.su-rail .suite-stat{border-top:1px solid currentColor;padding:14px 0 16px}
+.su-rail .suite-stat strong{font-size:30px;font-variant-numeric:tabular-nums}
+.su-rail #suite-actions .suite-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}
+.su-rail .suite-action{border-radius:0}
+.su-rail .suite-workspace section:last-of-type{clear:both}
+.su-rail .suite-nav{border-bottom-width:2px}
+.su-rail .suite-footer{border-top-width:2px}
+@media(max-width:900px){.su-rail #suite-overview{float:none;width:auto;position:static;min-height:0;border-right:0;border-bottom:1px solid currentColor;padding:0 0 18px;margin:0 0 18px}}
+
